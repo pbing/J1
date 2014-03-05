@@ -19,23 +19,45 @@ module j1(input         sys_clk_i, // main clock
 			     OP_N_LS_T,OP_N_RSHIFT_T,OP_T_MINUS_1,OP_R,
 			     OP_AT,OP_N_LSHIFT_T,OP_DEPTH,OP_N_ULS_T} op_t;
 
-   typedef enum logic [2:0] {INSN_LIT,INSN_UBRANCH,INSN_0BRANCH,
-			     INSN_CALL,INSN_ALU} iclass_t;
+   typedef enum logic [2:0] {INSN_UBRANCH,INSN_ZBRANCH,
+			     INSN_CALL,INSN_ALU} jmp_call_t;
 
-   typedef struct packed {
-      iclass_t           iclass;
-      logic              r_to_pc;
-      op_t               alu_op;
-      logic              t_to_n;
-      logic              t_to_r;
-      logic              n_to_mem;
-      logic              reserved;
-      logic signed [1:0] rstack;
-      logic signed [1:0] dstack;
+   typedef union packed {
+      struct packed {
+	 logic        tag;
+	 logic [14:0] immediate;
+      } lit;
+      
+      struct packed {
+	 jmp_call_t   tag;
+	 logic [12:0] address;
+      } ubranch;
+
+      struct packed {
+	 jmp_call_t   tag;
+	 logic [12:0] address;
+      } zbranch;
+
+      struct packed {
+	 jmp_call_t   tag;
+	 logic [12:0] address;
+      } call;
+
+      struct packed {
+	 jmp_call_t         tag;
+	 logic              r_to_pc;
+	 op_t               alu_op;
+	 logic              t_to_n;
+	 logic              t_to_r;
+	 logic              n_to_mem;
+	 logic              reserved;
+	 logic signed [1:0] rstack;
+	 logic signed [1:0] dstack;
+      } alu;
    } insn_t;
 
    var insn_t  insn;
-   wire [15:0] immediate = {1'b0,insn[14:0]};
+   wire [15:0] immediate = {1'b0,insn.lit.immediate};
 
    wire [15:0] ramrd;
    logic       io_sel;
@@ -84,11 +106,11 @@ module j1(input         sys_clk_i, // main clock
 
    always_comb io_sel = (st0[15:14] != 2'b00); // RAM:00000H...3FFFH I/O:4000H...FFFFH
 
-   wire is_lit     = (insn[15]);
-   wire is_ubranch = (insn.iclass == INSN_UBRANCH);
-   wire is_0branch = (insn.iclass == INSN_0BRANCH);
-   wire is_call    = (insn.iclass == INSN_CALL);
-   wire is_alu     = (insn.iclass == INSN_ALU);
+   wire is_lit     = (insn.lit.tag);
+   wire is_ubranch = (insn.ubranch.tag == INSN_UBRANCH);
+   wire is_zbranch = (insn.zbranch.tag == INSN_ZBRANCH);
+   wire is_call    = (insn.call.tag    == INSN_CALL);
+   wire is_alu     = (insn.alu.tag     == INSN_ALU);
 
    always_comb
      if (is_lit)
@@ -99,9 +121,9 @@ module j1(input         sys_clk_i, // main clock
 
 	  unique case (1'b1)
 	    is_ubranch:  op = OP_T;
-	    is_0branch:  op = OP_N;
+	    is_zbranch:  op = OP_N;
 	    is_call   :  op = OP_T;
-	    is_alu    :  op = op_t'(insn.alu_op);
+	    is_alu    :  op = op_t'(insn.alu.alu_op);
 	    default      op = op_t'('x);
 	  endcase
 
@@ -126,16 +148,16 @@ module j1(input         sys_clk_i, // main clock
 	  endcase
        end
 
-   assign io_rd   = (is_alu && (insn.alu_op == OP_AT) && io_sel);
+   assign io_rd   = (is_alu && (insn.alu.alu_op == OP_AT) && io_sel);
    assign io_wr   = _ramWE;
    assign io_addr = st0;
    assign io_dout = st1;
 
-   assign _ramWE = is_alu & insn.n_to_mem;
-   assign _dstkW = is_lit | (is_alu & insn.t_to_n);
+   assign _ramWE = is_alu & insn.alu.n_to_mem;
+   assign _dstkW = is_lit | (is_alu & insn.alu.t_to_n);
 
-   wire signed [4:0] dd = insn.dstack;  // D stack delta
-   wire signed [4:0] rd = insn.rstack;  // R stack delta
+   wire signed [4:0] dd = insn.alu.dstack;  // D stack delta
+   wire signed [4:0] rd = insn.alu.rstack;  // R stack delta
 
    always_comb
      if (is_lit)
@@ -149,13 +171,13 @@ module j1(input         sys_clk_i, // main clock
        begin
 	  _dsp   = dsp + dd;
 	  _rsp   = {$signed(rsp) + $signed(rd)};
-	  _rstkW = insn.t_to_r;
+	  _rstkW = insn.alu.t_to_r;
 	  _rstkD = st0;
        end
      else // jump/call
        begin
 	  // predicated jump is like DROP
-	  if (is_0branch)
+	  if (is_zbranch)
             _dsp = dsp - 5'd1;
 	  else
             _dsp = dsp;
@@ -179,9 +201,9 @@ module j1(input         sys_clk_i, // main clock
      if (sys_rst_i)
        _pc = pc;
      else
-       if (is_ubranch || (is_0branch && (st0 == 16'h0000)) || is_call)
-         _pc = insn[12:0];
-       else if (is_alu && insn[12])
+       if (is_ubranch || (is_zbranch && (st0 == 16'h0000)) || is_call)
+         _pc = insn.zbranch.address;
+       else if (is_alu && insn.alu.r_to_pc)
          //_pc = {1'b0,rst0[15:1]};
          _pc = rst0 >> 1;
        else
