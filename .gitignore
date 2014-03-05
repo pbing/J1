@@ -1,0 +1,3 @@
+syn/
+sim/*
+!sim/*.sv
