@@ -1,5 +1,7 @@
-# Desription
+# Description
 [J1: a small Forth CPU Core for FPGAs](http://excamera.com/sphinx/fpga-j1.html)
 
-Rewritten in SystemVerilog from Verilog Source [j1.v]
-(https://github.com/ros-drivers/wge100_driver/tree/hydro-devel/wge100_camera_firmware/src/hardware/verilog/j1.v)
+Rewritten in SystemVerilog from [Verilog Source](https://github.com/ros-drivers/wge100_driver/tree/hydro-devel/wge100_camera_firmware/src/hardware/verilog/j1.v).
+
+## Usage of SystemVerilog *union*
+ModelSim Altera Starter Edition 10.1d compiles and simulates with unions. Quartus II for Cyclone II-FPGA cannot use them. Use [this](rtl/j1_quartus_ii.sv) as a workaround.
