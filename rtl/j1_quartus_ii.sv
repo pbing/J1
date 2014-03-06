@@ -1,5 +1,9 @@
 /* J1 Forth CPU
  *
+ * Quartus II modification
+ *     Because unions are not supported by the Quartus II
+ *     software we have to work around it.
+ *
  * based on
  *     http://excamera.com/sphinx/fpga-j1.html
  *     https://github.com/ros-drivers/wge100_driver
@@ -29,12 +33,12 @@ module j1(input               sys_clk_i, // main clock
    typedef struct packed {
       tag_t        tag;
       logic [12:0] address;
-   } branch_t;
+   } bra_t;
 
    typedef struct packed {
       tag_t              tag;
       logic              r_to_pc;
-      op_t               alu_op;
+      op_t               op;
       logic              t_to_n;
       logic              t_to_r;
       logic              n_to_mem;
@@ -44,8 +48,11 @@ module j1(input               sys_clk_i, // main clock
    } alu_t;
 
    logic [15:0] insn;      // instruction
-   logic [12:0] _pc,pc;    // processor counter
-   logic [12:0] pc_plus_1; // processor counter + 1
+   var   lit_t  insn_lit;  // LIT instruction
+   var   bra_t  insn_bra;  // BRANCH instruction
+   var   alu_t  insn_alu;  // ALU instruction
+   logic [12:0] _pc,pc,    // processor counter
+		pc_plus_1; // processor counter + 1
    logic        io_sel;    // I/O select
 
    /* select instruction types */
@@ -100,40 +107,30 @@ module j1(input               sys_clk_i, // main clock
    /* select instruction types */
    always_comb
      begin
-	/* Because unions are not supported by the Quartus II software we have to work around it. */
-	var lit_t    lit_instr;
-	var branch_t bra_instr;
+	insn_lit = insn;
+	insn_bra = insn;
+	insn_alu = insn;
 
-	lit_instr  = insn;
-	bra_instr  = insn;
-	is_lit     = lit_instr.tag;
-	is_ubranch = (bra_instr.tag == TAG_UBRANCH);
-	is_zbranch = (bra_instr.tag == TAG_ZBRANCH);
-	is_call    = (bra_instr.tag == TAG_CALL);
-	is_alu     = (bra_instr.tag == TAG_ALU);
+	is_lit     = insn_lit.tag;
+	is_ubranch = (insn_bra.tag == TAG_UBRANCH);
+	is_zbranch = (insn_bra.tag == TAG_ZBRANCH);
+	is_call    = (insn_bra.tag == TAG_CALL);
+	is_alu     = (insn_bra.tag == TAG_ALU);
      end
 
    /* calculate next TOS value */
    always_comb
      if (is_lit)
-       begin
-	  var lit_t instr;
-
-	  instr = insn;
-	  _st0  = {1'b0,instr.immediate};
-       end
+       _st0  = {1'b0,insn_lit.immediate};
      else
        begin
-	  var op_t  op;
-	  var alu_t instr;
-
-	  instr = insn;
+	  var op_t op;
 
 	  unique case (1'b1)
 	    is_ubranch:  op = OP_T;
 	    is_zbranch:  op = OP_N;
 	    is_call   :  op = OP_T;
-	    is_alu    :  op = op_t'(instr.alu_op);
+	    is_alu    :  op = op_t'(insn_alu.op);
 	    default      op = op_t'('x);
 	  endcase
 
@@ -161,13 +158,11 @@ module j1(input               sys_clk_i, // main clock
    /* I/O and RAM control */
    always_comb
      begin
-	var alu_t instr;
 	logic     wr_en;
 
-	instr   = insn;
-	wr_en   = is_alu & instr.n_to_mem;
+	wr_en   = is_alu & insn_alu.n_to_mem;
 	io_sel  = (st0[15:14] != 2'b00); // I/O:4000H...FFFFH
-	io_rd   = (is_alu && (instr.alu_op == OP_AT) && io_sel);
+	io_rd   = (is_alu && (insn_alu.op == OP_AT) && io_sel);
 	io_wr   = wr_en & io_sel;
 	io_addr = st0;
 	io_dout = st1;
@@ -178,78 +173,61 @@ module j1(input               sys_clk_i, // main clock
 
    /* data and return stack control */
    always_comb
-     /* literals */
-     if (is_lit)
-       begin
-	  _dsp   = dsp + 5'd1;
-	  _dstkW = 1'b1;
-	  _rsp   = rsp;
-	  _rstkW = 1'b0;
-	  _rstkD = 16'hx; // don't care
-       end
-   /* ALU operations */
-     else if (is_alu)
-       begin
-	  var alu_t          instr;
-	  logic signed [4:0] dd,rd; // stack delta
+     begin
+	_dsp   = 5'dx;
+	_dstkW = 1'b0;
+	_rsp   = 5'dx;
+	_rstkW = 1'b0;
+	_rstkD = 16'hx;
 
-	  instr  = insn;
-	  dd     = instr.dstack;
-	  rd     = instr.rstack;
-	  _dsp   = dsp + dd;
-	  _dstkW = instr.t_to_n;
-	  _rsp   = rsp + rd;
-	  _rstkW = instr.t_to_r;
-	  _rstkD = st0;
-       end
-     else
-       /* jump/call */
-       begin
-	  if (is_zbranch)
-	    /* predicated jump is like DROP */
-            _dsp = dsp - 5'd1;
-	  else
-            _dsp = dsp;
+	/* literals */
+	if (is_lit)
+	  begin
+	     _dsp   = dsp + 5'd1;
+	     _dstkW = 1'b1;
+	  end
+	/* ALU operations */
+	else if (is_alu)
+	  begin
+	     logic signed [4:0] dd,rd; // stack delta
 
-	  _dstkW = 1'b0;
+	     dd     = insn_alu.dstack;
+	     rd     = insn_alu.rstack;
+	     _dsp   = dsp + dd;
+	     _dstkW = insn_alu.t_to_n;
+	     _rsp   = rsp + rd;
+	     _rstkW = insn_alu.t_to_r;
+	     _rstkD = st0;
+	  end
+	else
+	  /* branch/call */
+	  begin
+	     if (is_zbranch)
+	       /* predicated jump is like DROP */
+               _dsp = dsp - 5'd1;
 
-	  if (is_call)
-	    /* call */
-	    begin
-	       _rsp   = rsp + 5'd1;
-	       _rstkW = 1'b1;
-	       _rstkD = pc_plus_1 << 1;
-	    end
-	  else
-	    /* ubranch/zbranch */
-	    begin
-	       _rsp   = rsp;
-	       _rstkW = 1'b0;
-	       _rstkD = 16'hx; // don't care
-	    end
-       end
+	     if (is_call)
+	       begin
+		  _rsp   = rsp + 5'd1;
+		  _rstkW = 1'b1;
+		  _rstkD = pc_plus_1 << 1;
+	       end
+	  end
+     end
 
    /* control PC */
    always_comb pc_plus_1 = pc + 13'd1;
 
    always_comb
-     begin
-	var branch_t bra_instr;
-	var alu_t    alu_instr;
-
-	bra_instr = insn;
-	alu_instr = insn;
-
-	if (sys_rst_i)
-	  _pc = pc;
-	else
-	  if (is_ubranch || (is_zbranch && (st0 == 16'h0)) || is_call)
-            _pc = bra_instr.address;
-	  else if (is_alu && alu_instr.r_to_pc)
-            _pc = rst0 >> 1;
-	  else
-            _pc = pc_plus_1;
-     end
+     if (sys_rst_i)
+       _pc = pc;
+     else
+       if (is_ubranch || (is_zbranch && (st0 == 16'h0)) || is_call)
+         _pc = insn_bra.address;
+       else if (is_alu && insn_alu.r_to_pc)
+         _pc = rst0 >> 1;
+       else
+         _pc = pc_plus_1;
 
    /* update PC and stacks */
    always_ff @(posedge sys_clk_i)

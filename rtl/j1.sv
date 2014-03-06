@@ -46,8 +46,8 @@ module j1(input               sys_clk_i, // main clock
    } instr_t;
 
    instr_t      insn;      // instruction
-   logic [12:0] _pc,pc;    // processor counter
-   logic [12:0] pc_plus_1; // processor counter + 1
+   logic [12:0] _pc,pc,    // processor counter
+		pc_plus_1; // processor counter + 1
    logic        io_sel;    // I/O select
 
    /* select instruction types */
