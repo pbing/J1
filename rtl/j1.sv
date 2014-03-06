@@ -71,7 +71,7 @@ module j1(input               sys_clk_i, // main clock
 
    dpram8kx16 dpram(.clock(sys_clk_i),
 
-		    .address_a(_pc),
+		    .address_a(/*_pc*/pc),
 		    .data_a(16'h0),
 		    .wren_a(1'b0),
 		    .q_a(insn),
@@ -85,10 +85,10 @@ module j1(input               sys_clk_i, // main clock
    always_ff @(posedge sys_clk_i)
      begin
 	if (_dstkW)
-	  dstack[_dsp] = st0;
+	  dstack[_dsp] <= st0;
 
 	if (_rstkW)
-	  rstack[_rsp] = _rstkD;
+	  rstack[_rsp] <= _rstkD;
      end
 
    always_comb
@@ -169,23 +169,22 @@ module j1(input               sys_clk_i, // main clock
 	io_sel  = (st0[15:14] != 2'b00); // I/O:4000H...FFFFH
 	io_rd   = (is_alu && (instr.alu_op == OP_AT) && io_sel);
 	io_wr   = wr_en & io_sel;
-	io_addr = st0 >> 1; // changed from original design
+	io_addr = st0;
 	io_dout = st1;
 
-	//_ramWE = wr_en && (_st0[15:14] == 2'b00); // RAM:00000H...3FFFH
-	_ramWE = wr_en && !io_sel; // RAM:00000H...3FFFH
-	_dstkW = is_lit | (is_alu & instr.t_to_n);
+	//_ramWE = wr_en && (_st0[15:14] == 2'b00); // RAM:0000H...3FFFH
+	_ramWE = wr_en && !io_sel; // RAM:0000H...3FFFH
      end
 
-   always_comb pc_plus_1 = pc + 13'd1;
-
+   /* data and return stack control */
    always_comb
      /* literals */
      if (is_lit)
        begin
 	  _dsp   = dsp + 5'd1;
+	  _dstkW = 1'b1;
 	  _rsp   = rsp;
-	  _rstkW = 0;
+	  _rstkW = 1'b0;
 	  _rstkD = 16'hx; // don't care
        end
    /* ALU operations */
@@ -198,6 +197,7 @@ module j1(input               sys_clk_i, // main clock
 	  dd     = instr.dstack;
 	  rd     = instr.rstack;
 	  _dsp   = dsp + dd;
+	  _dstkW = instr.t_to_n;
 	  _rsp   = rsp + rd;
 	  _rstkW = instr.t_to_r;
 	  _rstkD = st0;
@@ -210,6 +210,8 @@ module j1(input               sys_clk_i, // main clock
             _dsp = dsp - 5'd1;
 	  else
             _dsp = dsp;
+
+	  _dstkW = 1'b0;
 
 	  if (is_call)
 	    /* call */
@@ -228,6 +230,8 @@ module j1(input               sys_clk_i, // main clock
        end
 
    /* control PC */
+   always_comb pc_plus_1 = pc + 13'd1;
+
    always_comb
      begin
 	var branch_t bra_instr;
