@@ -174,9 +174,9 @@ module j1(input               sys_clk_i, // main clock
    /* data and return stack control */
    always_comb
      begin
-	_dsp   = 5'dx;
+	_dsp   = dsp;
 	_dstkW = 1'b0;
-	_rsp   = 5'dx;
+	_rsp   = rsp;
 	_rstkW = 1'b0;
 	_rstkD = 16'hx;
 
