@@ -233,10 +233,10 @@ module j1(input               sys_clk_i, // main clock
    always_ff @(posedge sys_clk_i)
      if (sys_rst_i)
        begin
-	  pc  <= 0;
-	  dsp <= 0;
-	  st0 <= 0;
-	  rsp <= 0;
+	  pc  <= 13'h0;
+	  dsp <=  5'd0;
+	  st0 <= 16'h0;
+	  rsp <=  5'd0;
        end
      else
        begin
