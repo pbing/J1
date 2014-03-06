@@ -13,10 +13,10 @@ module CII_Starter_TOP (/* Clock Input */
                         input [9:0]   SW,          // Toggle Switch[9:0]
 
                         /* 7-SEG Display */
-                        output [6:0]  HEX0,        // Seven Segment Digit 0
-                        output [6:0]  HEX1,        // Seven Segment Digit 1
-                        output [6:0]  HEX2,        // Seven Segment Digit 2
-                        output [6:0]  HEX3,        // Seven Segment Digit 3
+                        output logic [6:0]  HEX0,  // Seven Segment Digit 0
+                        output logic [6:0]  HEX1,  // Seven Segment Digit 1
+                        output logic [6:0]  HEX2,  // Seven Segment Digit 2
+                        output logic [6:0]  HEX3,  // Seven Segment Digit 3
 
                         /* LED */
                         output logic [7:0]  LEDG,  // LED Green[7:0]
@@ -96,21 +96,29 @@ module CII_Starter_TOP (/* Clock Input */
                         inout [35:0]  GPIO_0,      // GPIO Connection 0
                         inout [35:0]  GPIO_1);     // GPIO Connection 1
 
+   /* I/O addresses */
+   localparam bit [15:0] io_ledg = 16'h4000,
+			 io_ledr = 16'h4002,
+
+			 io_hex0 = 16'h4010,
+			 io_hex1 = 16'h4012,
+			 io_hex2 = 16'h4014,
+			 io_hex3 = 16'h4016,
+
+			 io_key  = 16'h4020,
+			 io_sw   = 16'h4022;
+
    /* common signals */
    wire reset;
    wire clk;
 
    /* I/O signals */
-   wire [15:0] io_din,io_dout,io_addr;
-   wire        io_rd,io_wr;
-
+   logic [15:0] io_din;
+   wire  [15:0] io_dout,io_addr;
+   wire         io_rd,io_wr;
 
    /* I/O assignments */
-   assign clk           = CLOCK_24[0];
-   assign io_rd         = GPIO_0[17];
-   assign io_wr         = GPIO_0[18];
-   assign GPIO_1[31:16] = io_addr;
-   assign GPIO_1[15:0]  = io_dout;
+   assign clk = CLOCK_24[0];
 
    sync_reset sync_reset(.clk(clk),.key(KEY[0]),.reset(reset));
 
@@ -121,13 +129,30 @@ module CII_Starter_TOP (/* Clock Input */
        begin
 	  LEDG <= '0;
 	  LEDR <= '0;
+	  HEX0 <= '0;
+	  HEX1 <= '0;
+	  HEX2 <= '0;
+	  HEX3 <= '0;
        end
      else
-       begin
-	  if (io_addr == 16'h2000)
-	    LEDG <= io_dout[7:0];
+       if (io_wr)
+	 case (io_addr)
+	   io_ledg: LEDG <= io_dout[7:0];
+	   io_ledr: LEDR <= io_dout[9:0];
+	   io_hex0: HEX0 <= io_dout[6:0];
+	   io_hex1: HEX1 <= io_dout[6:0];
+	   io_hex2: HEX2 <= io_dout[6:0];
+	   io_hex3: HEX3 <= io_dout[6:0];
+	 endcase
 
-	  if (io_addr == 16'h2001)
-	    LEDR <= io_dout[9:0];
-       end
+   always_comb
+     begin
+	io_din = '0;
+
+	if (io_rd)
+	  case (io_addr)
+	    io_key: io_din[3:0] = KEY;
+	    io_sw : io_din[9:0] = SW;
+	  endcase
+     end
 endmodule
