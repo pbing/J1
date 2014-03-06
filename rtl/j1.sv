@@ -205,8 +205,8 @@ module j1(input               sys_clk_i, // main clock
      else
        /* jump/call */
        begin
-	  /* predicated jump is like DROP */
 	  if (is_zbranch)
+	    /* predicated jump is like DROP */
             _dsp = dsp - 5'd1;
 	  else
             _dsp = dsp;
@@ -221,7 +221,7 @@ module j1(input               sys_clk_i, // main clock
 	       _rstkD = pc_plus_1 << 1;
 	    end
 	  else
-	    /* */
+	    /* ubranch/zbranch */
 	    begin
 	       _rsp   = rsp;
 	       _rstkW = 1'b0;
