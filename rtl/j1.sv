@@ -167,7 +167,7 @@ module j1(input               sys_clk_i, // main clock
      begin
 	_dsp   = dsp;
 	_dstkW = 1'b0;
-	_rsp   = dsp;
+	_rsp   = rsp;
 	_rstkW = 1'b0;
 	_rstkD = 16'hx;
 
