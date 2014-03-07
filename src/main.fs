@@ -9,18 +9,9 @@ target
 4 org
 
 module[ eveything"
+
 include nuc.fs
-include io-addr.fs
-include hex-display.fs
-
-: led-walk ( -- )
-  h# 55 io_ledg !  h# 3ff io_ledr ! ;
-
-: main ( --)
-  begin
-    led-walk
-    hex-walk
-  again ;
+include application.fs
 
 ]module
 

@@ -1,5 +1,5 @@
 \ 0jump
-0000 045B           BRANCH main 
+0000 0478           BRANCH main 
 0002 FFFF           LIT $7FFF 
 \ depth
 0004 6E81           ALU $6E81 
@@ -1238,7 +1238,7 @@
 07EE 6B8D           ALU $6B8D 
 07F0 6023           ALU $6023 
 07F2 710F           ALU $710F 
-\ hex-walk
+\ hex-select
 07F4 C022           LIT $4022 
 07F6 6C00           ALU $6C00 
 07F8 8001           LIT $1 
@@ -1333,52 +1333,61 @@
 08A2 6103           ALU $6103 
 \ (then)
 08A4 700C           ALU $700C 
+\ rotate
+08A6 6081           ALU $6081 
+08A8 4066           CALL 0< 
+08AA 2459           0BRANCH (else) 
+08AC 800F           LIT $F 
+08AE 6903           ALU $6903 
+08B0 045B           BRANCH (then) 
+\ (else)
+08B2 8001           LIT $1 
+08B4 6D03           ALU $6D03 
+\ (then)
+08B6 700C           ALU $700C 
+\ led!
+08B8 6081           ALU $6081 
+08BA C000           LIT $4000 
+08BC 6023           ALU $6023 
+08BE 6103           ALU $6103 
+08C0 8006           LIT $6 
+08C2 6903           ALU $6903 
+08C4 C002           LIT $4002 
+08C6 6023           ALU $6023 
+08C8 710F           ALU $710F 
 \ led-walk
-08A6 8055           LIT $55 
-08A8 C000           LIT $4000 
-08AA 6023           ALU $6023 
-08AC 6103           ALU $6103 
-08AE 83FF           LIT $3FF 
-08B0 C002           LIT $4002 
-08B2 6023           ALU $6023 
-08B4 710F           ALU $710F 
+08CA 6081           ALU $6081 
+08CC 445C           CALL led! 
+08CE 0453           BRANCH rotate 
+\ wait
+08D0 8000           LIT $0 
+08D2 6180           ALU $6180 
+08D4 6147           ALU $6147 
+08D6 6147           ALU $6147 
+\ (do)
+08D8 4049           CALL looptest 
+08DA 246C           0BRANCH (do) 
+08DC 700C           ALU $700C 
+\ wait-1000
+08DE 8000           LIT $0 
+08E0 6180           ALU $6180 
+08E2 6147           ALU $6147 
+08E4 6147           ALU $6147 
+\ (do)
+08E6 83E8           LIT $3E8 
+08E8 4468           CALL wait 
+08EA 4049           CALL looptest 
+08EC 2473           0BRANCH (do) 
+08EE 700C           ALU $700C 
 \ main
-08B6 4453           CALL led-walk 
-08B8 43FA           CALL hex-walk 
-08BA 045B           BRANCH main 
-08BC 700C           ALU $700C 
-08BE FFFF           LIT $7FFF 
-08C0 FFFF           LIT $7FFF 
-08C2 FFFF           LIT $7FFF 
-08C4 FFFF           LIT $7FFF 
-08C6 FFFF           LIT $7FFF 
-08C8 FFFF           LIT $7FFF 
-08CA FFFF           LIT $7FFF 
-08CC FFFF           LIT $7FFF 
-08CE FFFF           LIT $7FFF 
-08D0 FFFF           LIT $7FFF 
-08D2 FFFF           LIT $7FFF 
-08D4 FFFF           LIT $7FFF 
-08D6 FFFF           LIT $7FFF 
-08D8 FFFF           LIT $7FFF 
-08DA FFFF           LIT $7FFF 
-08DC FFFF           LIT $7FFF 
-08DE FFFF           LIT $7FFF 
-08E0 FFFF           LIT $7FFF 
-08E2 FFFF           LIT $7FFF 
-08E4 FFFF           LIT $7FFF 
-08E6 FFFF           LIT $7FFF 
-08E8 FFFF           LIT $7FFF 
-08EA FFFF           LIT $7FFF 
-08EC FFFF           LIT $7FFF 
-08EE FFFF           LIT $7FFF 
-08F0 FFFF           LIT $7FFF 
-08F2 FFFF           LIT $7FFF 
-08F4 FFFF           LIT $7FFF 
-08F6 FFFF           LIT $7FFF 
-08F8 FFFF           LIT $7FFF 
-08FA FFFF           LIT $7FFF 
-08FC FFFF           LIT $7FFF 
+08F0 8001           LIT $1 
+\ (begin)
+08F2 43FA           CALL hex-select 
+08F4 4465           CALL led-walk 
+08F6 8064           LIT $64 
+08F8 446F           CALL wait-1000 
+08FA 0479           BRANCH (begin) 
+08FC 700C           ALU $700C 
 08FE FFFF           LIT $7FFF 
 0900 FFFF           LIT $7FFF 
 0902 FFFF           LIT $7FFF 
