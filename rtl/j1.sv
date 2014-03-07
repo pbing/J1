@@ -121,7 +121,7 @@ module j1(input               sys_clk_i, // main clock
 	    is_ubranch:  op = OP_T;
 	    is_zbranch:  op = OP_N;
 	    is_call   :  op = OP_T;
-	    is_alu    :  op = op_t'(insn.alu.op);
+	    is_alu    :  op = insn.alu.op;
 	    default      op = op_t'('x);
 	  endcase
 
