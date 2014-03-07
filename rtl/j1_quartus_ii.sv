@@ -78,12 +78,12 @@ module j1(input               sys_clk_i, // main clock
 
    dpram8kx16 dpram(.clock(sys_clk_i),
 
-		    .address_a(/*_pc*/pc),
+		    .address_a(_pc),
 		    .data_a(16'h0),
 		    .wren_a(1'b0),
 		    .q_a(insn),
 
-		    .address_b(/*_st0[13:1]*/st0[13:1]),
+		    .address_b(_st0[13:1]),
 		    .data_b(st1),
 		    .wren_b(_ramWE),
 		    .q_b(ramrd));
@@ -158,7 +158,7 @@ module j1(input               sys_clk_i, // main clock
    /* I/O and RAM control */
    always_comb
      begin
-	logic     wr_en;
+	logic wr_en;
 
 	wr_en   = is_alu & insn_alu.n_to_mem;
 	io_sel  = (st0[15:14] != 2'b00); // I/O:4000H...FFFFH
@@ -166,9 +166,7 @@ module j1(input               sys_clk_i, // main clock
 	io_wr   = wr_en & io_sel;
 	io_addr = st0;
 	io_dout = st1;
-
-	//_ramWE = wr_en && (_st0[15:14] == 2'b00); // RAM:0000H...3FFFH
-	_ramWE = wr_en && !io_sel; // RAM:0000H...3FFFH
+	_ramWE = wr_en && !io_sel;       // RAM:0000H...3FFFH
      end
 
    /* data and return stack control */
