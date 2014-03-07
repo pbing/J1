@@ -166,7 +166,7 @@ module j1(input               sys_clk_i, // main clock
 	io_wr   = wr_en & io_sel;
 	io_addr = st0;
 	io_dout = st1;
-	_ramWE  = wr_en && !io_sel;      // RAM:0000H...3FFFH
+	_ramWE  = wr_en & ~io_sel;       // RAM:0000H...3FFFH
      end
 
    /* data and return stack control */
