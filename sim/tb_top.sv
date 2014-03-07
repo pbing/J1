@@ -9,7 +9,7 @@ module tb_top;
    bit          CLOCK_50;                               //      50 MHz
    bit          EXT_CLOCK;                              //      External Clock
    ////////////////////////     Push Button             ////////////////////////
-   bit  [3:0]   KEY;                                    //      Pushbutton[3:0]
+   bit  [3:0]   KEY='1;                                 //      Pushbutton[3:0]
    ////////////////////////     DPDT Switch             ////////////////////////
    bit  [9:0]   SW;                                     //      Toggle Switch[9:0]
    ////////////////////////     7-SEG Dispaly   ////////////////////////
@@ -90,7 +90,16 @@ module tb_top;
 
    initial
      begin
-        #100ns KEY[0]=1;
+	/* reset */
+	KEY[0]=1'b0;
+        #100ns KEY[0]=1'b1;
+
+
+	#3us SW[1]=1'b1;
+	#3us SW[1]=1'b0; SW[2]=1'b1;
+	#3us SW[2]=1'b0; SW[3]=1'b1;
+	#3us SW[3]=1'b0; SW[4]=1'b1;
+	#3us SW[4]=1'b0;
 
         #3us $stop;
      end
