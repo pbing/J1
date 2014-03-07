@@ -129,20 +129,20 @@ module CII_Starter_TOP (/* Clock Input */
        begin
 	  LEDG <= '0;
 	  LEDR <= '0;
-	  HEX0 <= '0;
-	  HEX1 <= '0;
-	  HEX2 <= '0;
-	  HEX3 <= '0;
+	  HEX0 <= '1;
+	  HEX1 <= '1;
+	  HEX2 <= '1;
+	  HEX3 <= '1;
        end
      else
        if (io_wr)
 	 case (io_addr)
-	   io_ledg: LEDG <= io_dout[7:0];
-	   io_ledr: LEDR <= io_dout[9:0];
-	   io_hex0: HEX0 <= io_dout[6:0];
-	   io_hex1: HEX1 <= io_dout[6:0];
-	   io_hex2: HEX2 <= io_dout[6:0];
-	   io_hex3: HEX3 <= io_dout[6:0];
+	   io_ledg: LEDG <=  io_dout[7:0];
+	   io_ledr: LEDR <=  io_dout[9:0];
+	   io_hex0: HEX0 <= ~io_dout[6:0];
+	   io_hex1: HEX1 <= ~io_dout[6:0];
+	   io_hex2: HEX2 <= ~io_dout[6:0];
+	   io_hex3: HEX3 <= ~io_dout[6:0];
 	 endcase
 
    always_comb
