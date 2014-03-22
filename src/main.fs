@@ -1,8 +1,6 @@
 \ Compile the firmware
 
 include crossj1.fs
-
-meta
 include basewords.fs
 
 target
@@ -27,6 +25,7 @@ meta
 hex
 
 : create-output-file w/o create-file throw to outfile ;
+
 s" j1.mif" create-output-file
 :noname
    s" -- Quartus II generated Memory Initialization File (.mif)" type cr
@@ -37,9 +36,9 @@ s" j1.mif" create-output-file
    s" CONTENT BEGIN" type cr
 
     4000 0 do
-       s"     " type
+       4 spaces
        i 2/ s>d <# # # # # #> type s"  : " type
-       i t@ s>d <# # # # # #> type '; emit cr
+       i t@ s>d <# # # # # #> type [char] ; emit cr
     2 +loop
 
    s" END;" type cr
@@ -47,3 +46,5 @@ s" j1.mif" create-output-file
 
 s" j1.lst" create-output-file
 0 2000 disassemble-block
+
+bye

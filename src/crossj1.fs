@@ -133,6 +133,11 @@ j1asm
 : 0branch   2/ h# 2000 or t, ;
 : scall     2/ h# 4000 or t, ;
 
+\ hide Swift-Forth's definition of N
+also forth definitions
+: N ( -- n ) [ j1assembler ] N ;
+meta
+
 : dump-words ( c-addr n -- ) \ Write n/2 words from c-addr
     dup 6 > abort" invalid byte count"
     2/ dup >r
@@ -210,7 +215,7 @@ variable tcompile
 : +tcompile tcompile? abort" Already in compilation mode" 1 tcompile !  ;
 : -tcompile 0 tcompile ! ;
 
-: (literal)
+: (lit)
     \ dup $f rshift over $e rshift xor 1 and throw
     dup h# 8000 and if
         h# ffff xor recurse
@@ -222,7 +227,7 @@ variable tcompile
 ;
 : (t-constant)
     tcompile? if
-        (literal)
+        (lit)
     then
 ;
 
@@ -234,8 +239,8 @@ meta
 ;
 
 
-: literal (literal) ; immediate
-: 2literal swap (literal) (literal) ; immediate
+: literal (lit) ; immediate
+: 2literal swap (lit) (lit) ; immediate
 : call,
     dup referenced
     scall
@@ -338,19 +343,19 @@ import [then]
         postpone literal
     else
         tcompile? if
-            (literal)
+            (lit)
         then
     then
 ;
 
 decimal
 
-: [char] ( "name" -- ) ( run: -- ascii) char (literal) ;
+: [char] ( "name" -- ) ( run: -- ascii) char (lit) ;
 
 : ['] ( "name" -- ) ( run: -- xt )
     ' tcompile @ >r -tcompile execute r> tcompile !
     dup referenced
-    (literal)
+    (lit)
 ;
 
 : (sliteral--h) ( addr n -- ptr ) ( run: -- eeaddr n )
@@ -383,13 +388,13 @@ decimal
 : createdoes
     wordstr setlabel
     create there , ' ,
-    does> dup @ dup referenced (literal) cell+ @ execute
+    does> dup @ dup referenced (lit) cell+ @ execute
 ;
 
 : jumptable 
     wordstr setlabel
     create there ,
-    does> s" 2*" evaluate @ dup referenced (literal) s" + @" evaluate
+    does> s" 2*" evaluate @ dup referenced (lit) s" + @" evaluate
 ;
 
 : | ' execute dup referenced t, ;
@@ -518,7 +523,7 @@ decimal
     s" none" 2constant sourcefilename
 [THEN]
 
-: line# sourceline# (literal) ;
+: line# sourceline# (lit) ;
 create currfilename 1 cells 80 + allot
 variable currfilename#
 : savestr ( c-addr u dst -- ) 2dup c! 1+ swap cmove ;
@@ -526,7 +531,7 @@ variable currfilename#
     if
         sourcefilename 2dup currfilename savestr (sliteral--h) currfilename# !
     else
-        currfilename# @ dup 1+ (literal) tc@ (literal)
+        currfilename# @ dup 1+ (lit) tc@ (lit)
     then ;
 : snap line# getfilename s" (snap)" evaluate ; immediate
 : assert 0= if line# sourcefilename (sliteral) s" (assert)" evaluate then ; immediate
