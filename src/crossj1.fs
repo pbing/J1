@@ -373,6 +373,7 @@ decimal
 : s' ( "ccc<quote>" -- ) ( run: -- eaddr n ) [char] ' parse (sliteral) ;
 
 : create
+    talign
     wordstr setlabel
     create  there ,
     does>   @ do-number
