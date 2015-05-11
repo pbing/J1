@@ -27,10 +27,10 @@ module[ nuc"
     xor         \ ((a^b)&m)^a
 ;
 
-: c@    dup @ swap d# 1 and if d# 8 rshift else d# 255 and then ;
+: c@    dup@ swap d# 1 and if d# 8 rshift else d# 255 and then ;
 : c!    ( u c-addr )
         swap h# ff and dup d# 8 lshift or swap
-        tuck dup @ swap         ( c-addr u v c-addr )
+        tuck dup@ swap         ( c-addr u v c-addr )
         d# 1 and d# 0 = h# ff xor
         merge swap !
 ;
@@ -53,6 +53,13 @@ module[ nuc"
 \ Stack
 : 2dup  over over ;
 : +!    tuck @ + swap ! ;
+
+\ Packing, Unpacking
+: hibyte ( 16b -- hi )   h# 8 rshift ;
+: lobyte ( 16b -- lo )   h# ff and ;
+: hilo ( 16b -- hi lo )   dup hibyte  swap lobyte ;
+: lohi ( 16b -- lo hi )   dup lobyte  swap hibyte ;
+: lohi-pack ( lo hi -- 16b )   h# 8 lshift  or ; 
 
 \ Comparisons
 : <>        = invert ;
@@ -82,7 +89,7 @@ code addrcell+ end-code
 : c+!       tuck c@ + swap c! ;
 
 : count     dup 1+ swap c@ ;
-: /string   dup >r - swap r> + swap ;
+: /string   dup>r - swap r> + swap ;
 : aligned   1+ h# fffe and ;
 
 : sliteral
@@ -180,7 +187,7 @@ end-code
 ;
 
 : 2@                        ( ptr -- lo hi )
-    dup @ swap 2+ @
+    dup@ swap 2+ @
 ;
 
 : 2!                        ( lo hi ptr -- )
@@ -245,7 +252,7 @@ end-code
 : dinvert  invert swap invert swap ;
 : d<            \ ( al ah bl bh -- flag )
     rot         \ al bl bh ah
-    2dup =
+    2dup=
     if
         2drop u<
     else
@@ -268,7 +275,7 @@ end-code
 : d1- d# -1. d+ ;
 
 : d+!                   ( v. addr -- )
-    dup >r
+    dup>r
     2@
     d+
     r>
@@ -322,7 +329,7 @@ create scratch d# 2 allot
 
 : *         um* drop ;
 : abssgn    ( a b -- |a| |b| negf )
-        2dup xor 0< >r abs swap abs swap r> ;
+        2dupxor 0< >r abs swap abs swap r> ;
 
 : m*    abssgn >r um* r> if dnegate then ;
 
@@ -443,7 +450,7 @@ d# 32 constant bl
 : dump16
     ( addr u )
     0do
-        dup hex4 [char] : emit space dup @ hex4 cr 2+
+        dup hex4 [char] : emit space dup@ hex4 cr 2+
     loop
     drop
 ;
@@ -452,7 +459,7 @@ d# 32 constant bl
 : hex d# 16 base ! ;
 
 : S.R ( a u n -- ) OVER - SPACES TYPE ;
-: D.R ( d n -- ) ( 8.6.1.1070 ) >R DUP >R DABS <# #S R> SIGN #> R> S.R ;
+: D.R ( d n -- ) ( 8.6.1.1070 ) >R DUP>R DABS <# #S R> SIGN #> R> S.R ;
 : U.R ( u n -- ) ( 6.2.2330 ) d# 0 SWAP D.R ;
 : .R ( n n -- ) ( 6.2.0210 ) >R S>D R> D.R ;
 
