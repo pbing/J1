@@ -84,7 +84,11 @@ code addrcells end-code
 code cell+ end-code
 code addrcell+ end-code
 : 2+        d# 2 + ;
+code cell- end-code
+code addrcell- end-code
 : 2-        1- 1- ;
+code cell/ end-code
+code addrcell/ end-code
 : 2/        d# 1 rshift ;
 : c+!       tuck c@ + swap c! ;
 
