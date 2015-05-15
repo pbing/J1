@@ -1,5 +1,5 @@
 \ 0jump
-0000 047C           BRANCH main 
+0000 0519           BRANCH main 
 0002 FFFF           LIT $7FFF 
 \ depth
 0004 6E81           ALU $6E81 
@@ -193,10 +193,10 @@
 \ cell+
 0126 8002           LIT $2 
 0128 720F           ALU $720F 
-\ 2-
+\ cell-
 012A 6A00           ALU $6A00 
 012C 7A0C           ALU $7A0C 
-\ 2/
+\ cell/
 012E 8001           LIT $1 
 0130 790F           ALU $790F 
 \ c+!
@@ -547,9 +547,9 @@
 0342 800F           LIT $F 
 0344 6D03           ALU $6D03 
 0346 6147           ALU $6147 
-0348 4097           CALL 2/ 
+0348 4097           CALL cell/ 
 034A 6180           ALU $6180 
-034C 4097           CALL 2/ 
+034C 4097           CALL cell/ 
 034E 6B8D           ALU $6B8D 
 0350 6403           ALU $6403 
 0352 718C           ALU $718C 
@@ -1370,118 +1370,132 @@
 08D6 6081           ALU $6081 
 08D8 4462           CALL led! 
 08DA 0459           BRANCH rotate 
-\ wait
-08DC 6147           ALU $6147 
-08DE 8000           LIT $0 
-08E0 6147           ALU $6147 
-\ (do)
-08E2 4047           CALL looptest 
-08E4 2471           0BRANCH (do) 
-08E6 700C           ALU $700C 
-\ wait-1000
-08E8 6147           ALU $6147 
-08EA 8000           LIT $0 
-08EC 6147           ALU $6147 
-\ (do)
-08EE 83E8           LIT $3E8 
-08F0 446E           CALL wait 
-08F2 4047           CALL looptest 
-08F4 2477           0BRANCH (do) 
-08F6 700C           ALU $700C 
-\ main
-08F8 8001           LIT $1 
+\ taskptr
+08DC 0000           BRANCH 0jump 
+\ _dsp
+08DE 0000           BRANCH 0jump 
+\ pause
+08E0 6E81           ALU $6E81 
+08E2 88DE           LIT $8DE 
+08E4 6C00           ALU $6C00 
+08E6 4080           CALL - 
+08E8 88DC           LIT $8DC 
+08EA 6C00           ALU $6C00 
+08EC 6023           ALU $6023 
+08EE 6103           ALU $6103 
+08F0 88DC           LIT $8DC 
+08F2 6C00           ALU $6C00 
+08F4 6081           ALU $6081 
+08F6 4093           CALL cell+ 
+08F8 6180           ALU $6180 
+08FA 6C00           ALU $6C00 
+08FC 6044           ALU $6044 
+08FE 80FF           LIT $FF 
+0900 6303           ALU $6303 
 \ (begin)
-08FA 4400           CALL hex-select 
-08FC 446B           CALL led-walk 
-08FE 8064           LIT $64 
-0900 4474           CALL wait-1000 
-0902 047D           BRANCH (begin) 
-0904 700C           ALU $700C 
-0906 FFFF           LIT $7FFF 
-0908 FFFF           LIT $7FFF 
-090A FFFF           LIT $7FFF 
-090C FFFF           LIT $7FFF 
-090E FFFF           LIT $7FFF 
-0910 FFFF           LIT $7FFF 
-0912 FFFF           LIT $7FFF 
-0914 FFFF           LIT $7FFF 
-0916 FFFF           LIT $7FFF 
-0918 FFFF           LIT $7FFF 
-091A FFFF           LIT $7FFF 
-091C FFFF           LIT $7FFF 
-091E FFFF           LIT $7FFF 
-0920 FFFF           LIT $7FFF 
-0922 FFFF           LIT $7FFF 
-0924 FFFF           LIT $7FFF 
-0926 FFFF           LIT $7FFF 
-0928 FFFF           LIT $7FFF 
-092A FFFF           LIT $7FFF 
-092C FFFF           LIT $7FFF 
-092E FFFF           LIT $7FFF 
-0930 FFFF           LIT $7FFF 
-0932 FFFF           LIT $7FFF 
-0934 FFFF           LIT $7FFF 
-0936 FFFF           LIT $7FFF 
-0938 FFFF           LIT $7FFF 
-093A FFFF           LIT $7FFF 
-093C FFFF           LIT $7FFF 
-093E FFFF           LIT $7FFF 
-0940 FFFF           LIT $7FFF 
-0942 FFFF           LIT $7FFF 
-0944 FFFF           LIT $7FFF 
-0946 FFFF           LIT $7FFF 
-0948 FFFF           LIT $7FFF 
-094A FFFF           LIT $7FFF 
-094C FFFF           LIT $7FFF 
-094E FFFF           LIT $7FFF 
-0950 FFFF           LIT $7FFF 
-0952 FFFF           LIT $7FFF 
-0954 FFFF           LIT $7FFF 
-0956 FFFF           LIT $7FFF 
-0958 FFFF           LIT $7FFF 
-095A FFFF           LIT $7FFF 
-095C FFFF           LIT $7FFF 
-095E FFFF           LIT $7FFF 
-0960 FFFF           LIT $7FFF 
-0962 FFFF           LIT $7FFF 
-0964 FFFF           LIT $7FFF 
-0966 FFFF           LIT $7FFF 
-0968 FFFF           LIT $7FFF 
-096A FFFF           LIT $7FFF 
-096C FFFF           LIT $7FFF 
-096E FFFF           LIT $7FFF 
-0970 FFFF           LIT $7FFF 
-0972 FFFF           LIT $7FFF 
-0974 FFFF           LIT $7FFF 
-0976 FFFF           LIT $7FFF 
-0978 FFFF           LIT $7FFF 
-097A FFFF           LIT $7FFF 
-097C FFFF           LIT $7FFF 
-097E FFFF           LIT $7FFF 
-0980 FFFF           LIT $7FFF 
-0982 FFFF           LIT $7FFF 
-0984 FFFF           LIT $7FFF 
-0986 FFFF           LIT $7FFF 
-0988 FFFF           LIT $7FFF 
-098A FFFF           LIT $7FFF 
-098C FFFF           LIT $7FFF 
-098E FFFF           LIT $7FFF 
-0990 FFFF           LIT $7FFF 
-0992 FFFF           LIT $7FFF 
-0994 FFFF           LIT $7FFF 
-0996 FFFF           LIT $7FFF 
-0998 FFFF           LIT $7FFF 
-099A FFFF           LIT $7FFF 
-099C FFFF           LIT $7FFF 
-099E FFFF           LIT $7FFF 
-09A0 FFFF           LIT $7FFF 
-09A2 FFFF           LIT $7FFF 
-09A4 FFFF           LIT $7FFF 
-09A6 FFFF           LIT $7FFF 
-09A8 FFFF           LIT $7FFF 
-09AA FFFF           LIT $7FFF 
-09AC FFFF           LIT $7FFF 
-09AE FFFF           LIT $7FFF 
+0902 6081           ALU $6081 
+0904 248B           0BRANCH (repeat) 
+0906 6147           ALU $6147 
+0908 4012           CALL tuck 
+090A 6023           ALU $6023 
+090C 6103           ALU $6103 
+090E 4093           CALL cell+ 
+0910 6B8D           ALU $6B8D 
+0912 6A00           ALU $6A00 
+0914 0481           BRANCH (begin) 
+\ (repeat)
+0916 6103           ALU $6103 
+0918 6B8D           ALU $6B8D 
+091A 8007           LIT $7 
+091C 6903           ALU $6903 
+091E 41D9           CALL bounds 
+\ (begin)
+0920 6581           ALU $6581 
+0922 2498           0BRANCH (repeat) 
+0924 6B8D           ALU $6B8D 
+0926 6181           ALU $6181 
+0928 6023           ALU $6023 
+092A 6103           ALU $6103 
+092C 4093           CALL cell+ 
+092E 0490           BRANCH (begin) 
+\ (repeat)
+0930 0014           BRANCH 2drop 
+\ progress
+0932 6E81           ALU $6E81 
+0934 88DE           LIT $8DE 
+0936 6023           ALU $6023 
+0938 6103           ALU $6103 
+093A 88DC           LIT $8DC 
+093C 6C00           ALU $6C00 
+093E 6081           ALU $6081 
+0940 6C00           ALU $6C00 
+0942 4091           CALL cells 
+0944 6044           ALU $6044 
+0946 80FF           LIT $FF 
+0948 6303           ALU $6303 
+094A 6181           ALU $6181 
+094C 6203           ALU $6203 
+094E 6B8D           ALU $6B8D 
+0950 8008           LIT $8 
+0952 6903           ALU $6903 
+0954 6181           ALU $6181 
+0956 6203           ALU $6203 
+\ (begin)
+0958 6581           ALU $6581 
+095A 24B2           0BRANCH (repeat) 
+095C 6C81           ALU $6C81 
+095E 6147           ALU $6147 
+0960 4095           CALL cell- 
+0962 04AC           BRANCH (begin) 
+\ (repeat)
+0964 6103           ALU $6103 
+\ (begin)
+0966 6581           ALU $6581 
+0968 24B9           0BRANCH (repeat) 
+096A 6C81           ALU $6C81 
+096C 400B           CALL -rot 
+096E 4095           CALL cell- 
+0970 04B3           BRANCH (begin) 
+\ (repeat)
+0972 0014           BRANCH 2drop 
+\ launch
+0974 88DC           LIT $8DC 
+0976 6C00           ALU $6C00 
+0978 8100           LIT $100 
+097A 6181           ALU $6181 
+097C 6023           ALU $6023 
+097E 6103           ALU $6103 
+0980 4093           CALL cell+ 
+0982 6023           ALU $6023 
+0984 710F           ALU $710F 
+\ wait
+0986 6147           ALU $6147 
+0988 8000           LIT $0 
+098A 6147           ALU $6147 
+\ (do)
+098C 4047           CALL looptest 
+098E 24C6           0BRANCH (do) 
+0990 700C           ALU $700C 
+\ wait-ms
+0992 6147           ALU $6147 
+0994 8000           LIT $0 
+0996 6147           ALU $6147 
+\ (do)
+0998 4470           CALL pause 
+099A 8578           LIT $578 
+099C 44C3           CALL wait 
+099E 4047           CALL looptest 
+09A0 24CC           0BRANCH (do) 
+09A2 700C           ALU $700C 
+\ task1
+09A4 8001           LIT $1 
+\ (begin)
+09A6 446B           CALL led-walk 
+09A8 8BB8           LIT $BB8 
+09AA 44C9           CALL wait-ms 
+09AC 04D3           BRANCH (begin) 
+09AE 700C           ALU $700C 
+\ /task1
 09B0 FFFF           LIT $7FFF 
 09B2 FFFF           LIT $7FFF 
 09B4 FFFF           LIT $7FFF 
@@ -1547,16 +1561,18 @@
 0A2C FFFF           LIT $7FFF 
 0A2E FFFF           LIT $7FFF 
 0A30 FFFF           LIT $7FFF 
-0A32 FFFF           LIT $7FFF 
-0A34 FFFF           LIT $7FFF 
-0A36 FFFF           LIT $7FFF 
-0A38 FFFF           LIT $7FFF 
-0A3A FFFF           LIT $7FFF 
-0A3C FFFF           LIT $7FFF 
-0A3E FFFF           LIT $7FFF 
-0A40 FFFF           LIT $7FFF 
-0A42 FFFF           LIT $7FFF 
-0A44 FFFF           LIT $7FFF 
+\ main
+0A32 89B0           LIT $9B0 
+0A34 88DC           LIT $8DC 
+0A36 6023           ALU $6023 
+0A38 6103           ALU $6103 
+0A3A 89A4           LIT $9A4 
+0A3C 44BA           CALL launch 
+\ (begin)
+0A3E 4499           CALL progress 
+0A40 4400           CALL hex-select 
+0A42 051F           BRANCH (begin) 
+0A44 700C           ALU $700C 
 0A46 FFFF           LIT $7FFF 
 0A48 FFFF           LIT $7FFF 
 0A4A FFFF           LIT $7FFF 
