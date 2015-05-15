@@ -6,8 +6,8 @@
 \ Example usage for coroutines is
 \
 \ : task1 begin pause again ;
-\ create task-store 130 allot \ 2 + 64 + 64
-\ task-store taskptr !
+\ create /task1 130 allot \ 2 + 64 + 64
+\ /task1 taskptr !
 \ ' task1 launch
 \ ... progress ... progress ... progress ...
 
