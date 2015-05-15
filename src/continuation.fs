@@ -32,7 +32,7 @@ variable _dsp
 \ restore D and R from taskptr
 : progress ( -- )
     dsp _dsp !
-    taskptr @  dup @ cells
+    taskptr @  dup@ cells
     dup>r  h# ff and
     over +  r> d# 8 rshift over +
 
