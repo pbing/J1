@@ -1,0 +1,3 @@
+[submodule "wge100_driver"]
+	path = wge100_driver
+	url = https://github.com/ros-drivers/wge100_driver.git
