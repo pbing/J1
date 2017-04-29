@@ -1,3 +1,4 @@
 syn/
 sim/*
 !sim/*.sv
+wge100_driver/
